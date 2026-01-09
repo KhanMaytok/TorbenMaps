@@ -152,21 +152,33 @@ double rseed, increment = 0.0000001;
 int best = 500000;
 int weight[30];
 
-int min(x,y)
+static inline int min(x,y)
 int x,y;
 { return(x<y ? x : y); }
 
-int max(x,y)
+static inline int max(x,y)
 int x,y;
 { return(x<y ? y : x); }
 
-double fmin(x,y)
+static inline double planet_fmin(x,y)
 double x,y;
 { return(x<y ? x : y); }
 
-double fmax(x,y)
+static inline double planet_fmax(x,y)
 double x,y;
 { return(x<y ? y : x); }
+
+static inline double rand2(p,q) /* random number generator taking two seeds */
+double p,q;	  /* rand2(p,q) = rand2(q,p) is important     */
+{
+  double r;
+  r = (p+3.14159265)*(q+3.14159265);
+  return(2.*(r-(int)r)-1.);
+}
+
+static inline double log_2(x)
+double x;
+{ return(log(x)*1.44269504088896340736); } /* 1/log(2) = 1.44269504088896340736 */
 
 int main(ac,av)
 int ac;
@@ -178,7 +190,7 @@ char **av;
     orthographic(), gnomonic(), icosahedral(), azimuth(), conical(),
     search();
   int i;
-  double rand2(), log_2(), planet1();
+  double planet1();
   void readcolors();
   void readmap(), makeoutline(), smoothshades();
   FILE *outfile, *colfile = NULL;
@@ -794,7 +806,7 @@ void smoothshades()
 
 void mercator()
 {
-  double y,scale1,cos2,theta1, log_2();
+  double y,scale1,cos2,theta1,costheta1,sintheta1;
   int i,j,k;
   void planet0();
 
@@ -813,14 +825,16 @@ void mercator()
     Depth = 3*((int)(log_2(scale1*Height)))+3;
     for (i = 0; i < Width ; i++) {
       theta1 = longi-0.5*PI+PI*(2.0*i-Width)/Width/scale;
-      planet0(cos(theta1)*cos2,y,-sin(theta1)*cos2, i,j);
+      costheta1 = cos(theta1);
+      sintheta1 = sin(theta1);
+      planet0(costheta1*cos2,y,-sintheta1*cos2, i,j);
     }
   }
 }
 
 void peter()
 {
-  double y,cos2,theta1,scale1, log_2();
+  double y,cos2,theta1,costheta1,sintheta1,scale1;
   int k,i,j,water,land;
   void planet0();
 
@@ -843,7 +857,9 @@ void peter()
 	Depth = 3*((int)(log_2(scale1*Height)))+3;
 	for (i = 0; i < Width ; i++) {
 	  theta1 = longi-0.5*PI+PI*(2.0*i-Width)/Width/scale;
-	  planet0(cos(theta1)*cos2,y,-sin(theta1)*cos2, i,j);
+	  costheta1 = cos(theta1);
+	  sintheta1 = sin(theta1);
+	  planet0(costheta1*cos2,y,-sintheta1*cos2, i,j);
 	  if (col[i][j] < LAND) water++; else land++;
 	}
       }
@@ -856,7 +872,7 @@ void peter()
 
 void squarep()
 {
-  double y,scale1,theta1,cos2, log_2();
+  double y,scale1,theta1,costheta1,sintheta1,cos2;
   int k,i,j;
   void planet0();
 
@@ -875,7 +891,9 @@ void squarep()
         Depth = 3*((int)(log_2(scale1*Height)))+3;
         for (i = 0; i < Width ; i++) {
           theta1 = longi-0.5*PI+PI*(2.0*i-Width)/Width/scale;
-          planet0(cos(theta1)*cos2,sin(y),-sin(theta1)*cos2, i,j);
+          costheta1 = cos(theta1);
+          sintheta1 = sin(theta1);
+          planet0(costheta1*cos2,sin(y),-sintheta1*cos2, i,j);
         }
       }
     }
@@ -884,7 +902,7 @@ void squarep()
 
 void mollweide()
 {
-  double y,y1,zz,scale1,cos2,theta1,theta2, log_2();
+  double y,y1,zz,scale1,cos2,theta1,theta2;
   int i,j,i1=1,k;
   void planet0();
 
@@ -927,7 +945,7 @@ void mollweide()
 
 void sinusoid()
 {
-  double y,theta1,theta2,cos2,l1,i1,scale1, log_2();
+  double y,theta1,theta2,thetaSum,cos2,l1,i1,scale1;
   int k,i,j,l,c;
   void planet0();
 
@@ -942,6 +960,7 @@ void sinusoid()
     } else {
       cos2 = cos(y);
       if (cos2>0.0) {
+        double siny = sin(y);
         scale1 = scale*Width/Height/cos2/PI;
         Depth = 3*((int)(log_2(scale1*Height)))+3;
         for (i = 0; i<Width; i++) {
@@ -954,7 +973,8 @@ void sinusoid()
             col[i][j] = BACK;
             if (doshade>0) shades[i][j] = 255;
           } else {
-            planet0(cos(theta1+theta2)*cos2,sin(y),-sin(theta1+theta2)*cos2,
+            thetaSum = theta1+theta2;
+            planet0(cos(thetaSum)*cos2,siny,-sin(thetaSum)*cos2,
                     i,j);
           }
         }
@@ -1316,7 +1336,7 @@ void conical()
 
 void search()
 {
-  double y,cos2,theta1,scale1, planet1(), log_2();
+  double y,cos2,theta1,scale1, planet1();
   double y2,cos22,theta12;
   int i,j,k,l,c,c1,c2,c3, errcount, errcount1;
 
@@ -1503,7 +1523,7 @@ int level;		    /* levels to go */
 	      } else { /* ax==bx, very unlikely to ever happen */
 		ex = 0.5*ax+0.5*bx; ey = 0.5*ay+0.5*by; ez = 0.5*az+0.5*bz;
 	      }
-	      if (lab>1.0) lab = pow(lab,0.5);
+	      if (lab>1.0) lab = sqrt(lab);
 	      /* decrease contribution for very long distances */
 
               /* new altitude is: */
@@ -1642,15 +1662,6 @@ double x,y,z;
 		Depth));
 		/* subdivision depth */
 
-}
-
-
-double rand2(p,q) /* random number generator taking two seeds */
-double p,q;	  /* rand2(p,q) = rand2(q,p) is important     */
-{
-  double r;
-  r = (p+3.14159265)*(q+3.14159265);
-  return(2.*(r-(int)r)-1.);
 }
 
 void printppm(outfile) /* prints picture in PPM (portable pixel map) format */
@@ -2017,10 +2028,6 @@ FILE *outfile;
   fclose(outfile);
 }
 
-double log_2(x)
-double x;
-{ return(log(x)/log(2.0)); }
-
 void print_error(char *filename, char *ext)
 {
   fprintf(stderr,"Usage: planet [options]\n\n");
@@ -2080,7 +2087,7 @@ void print_error(char *filename, char *ext)
 /*    O : strong preference for land (value=4)		       */
 /*    @ : very strong preference for land (value=8)	       */
 /*							       */
-/* Each point on the map corresponds to a point on a 15° grid. */
+/* Each point on the map corresponds to a point on a 15ï¿½ grid. */
 /*							       */
 /* The program tries seeds starting from the specified and     */
 /* successively outputs the seed (and rotation) of the best    */

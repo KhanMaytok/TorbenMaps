@@ -1,0 +1,11 @@
+# Build artifacts
+*.o
+planet
+planet.exe
+
+# Test outputs
+test_output.*
+*.bmp
+*.ppm
+*.xpm
+*.heightfield
