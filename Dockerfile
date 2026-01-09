@@ -3,20 +3,17 @@
 
 FROM debian:bullseye-slim
 
-# Install MinGW cross-compiler for Windows
+# Install MinGW cross-compiler for Windows (64-bit only)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    gcc-mingw-w64-i686 \
-    gcc-mingw-w64-x86-64 \
-    make && \
+    gcc-mingw-w64-x86-64 && \
     rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /build
 
-# Copy source files
+# Copy source file
 COPY planet.c .
-COPY Makefile .
 
 # Build for Windows (64-bit)
 # Using x86_64-w64-mingw32-gcc as the compiler
