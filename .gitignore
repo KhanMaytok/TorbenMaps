@@ -9,3 +9,6 @@ test_output.*
 *.ppm
 *.xpm
 *.heightfield
+
+# Benchmark script
+benchmark.sh
