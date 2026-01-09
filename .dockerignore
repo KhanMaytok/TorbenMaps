@@ -1,0 +1,17 @@
+# Exclude git files
+.git
+.gitignore
+
+# Exclude documentation (not needed for build)
+Manual.txt
+ReadMe
+
+# Exclude color map files (not needed for compilation)
+*.col
+*.rgb
+*.map
+
+# Exclude existing executables
+planet.exe
+planet
+*.o
