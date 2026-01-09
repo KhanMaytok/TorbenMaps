@@ -45,8 +45,10 @@ double log_2(x) {
 
 **After:**
 ```c
+#define INV_LOG_2 1.44269504088896340736 /* 1/log(2) for fast log_2 calculation */
+
 static inline double log_2(x) {
-  return(log(x)*1.44269504088896340736); /* 1/log(2) precomputed */
+  return(log(x)*INV_LOG_2);
 }
 ```
 
@@ -64,6 +66,19 @@ if (lab>1.0) lab = sqrt(lab);
 ```
 
 **Impact:** `sqrt()` is significantly faster than `pow()` for square root operations
+
+#### c) Replaced magic numbers with named constants
+**Before:**
+```c
+r = (p+3.14159265)*(q+3.14159265);
+```
+
+**After:**
+```c
+r = (p+PI)*(q+PI);  /* PI = 3.14159265358979 */
+```
+
+**Impact:** Improved maintainability and slightly better precision
 
 ### 4. Trigonometric Function Caching
 
