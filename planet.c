@@ -110,6 +110,7 @@ char letters[64] = {
 
 #define PI 3.14159265358979
 #define DEG2RAD 0.0174532918661 /* pi/180 */
+#define INV_LOG_2 1.44269504088896340736 /* 1/log(2) for fast log_2 calculation */
 
 /* these three values can be changed to change world characteristica */
 
@@ -172,13 +173,13 @@ static inline double rand2(p,q) /* random number generator taking two seeds */
 double p,q;	  /* rand2(p,q) = rand2(q,p) is important     */
 {
   double r;
-  r = (p+3.14159265)*(q+3.14159265);
+  r = (p+PI)*(q+PI);
   return(2.*(r-(int)r)-1.);
 }
 
 static inline double log_2(x)
 double x;
-{ return(log(x)*1.44269504088896340736); } /* 1/log(2) = 1.44269504088896340736 */
+{ return(log(x)*INV_LOG_2); }
 
 int main(ac,av)
 int ac;
