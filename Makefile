@@ -4,7 +4,7 @@
 CC=gcc
 
 # And change this to your favourite C compiler flags:
-CFLAGS = -O -g -W -Wall -D_USE_LIBM_MATH_H
+CFLAGS = -O3 -march=native -ffast-math -g -W -Wall -D_USE_LIBM_MATH_H
 
 OBJS = planet.o 
 
